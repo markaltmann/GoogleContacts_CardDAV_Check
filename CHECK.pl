@@ -1,52 +1,52 @@
 ### Google Contacts Program that should be used to find out the contacts with the big pictures and other malformations not correctly interpreted by Windows Phone.
-### The standard size of the Windows Contact Images is: :TODO
+### The standard size of the Windows Contact Images is: 72 on 72 px
 
 ### Documentation:
 # http://search.cpan.org/~merixzon/WWW-Google-Contacts-0.38/lib/WWW/Google/Contacts.pm
 
+### Includes
+use FindBin;
 use WWW::Google::Contacts;
 
+### Functions
+
+# TODO: Create Function to check the photo for Size, resolution and ratio
+# Some of my photos seem to not have any resolution, or are too big. Still looking into this.
+# sub check_google_contact_photo {
+    # # Get the photo
+    # my ($filename) = @_;
+    # open (my $photo, "<", $filename) or die "Can't open file [$filename]: $!";
+    # # Check the content
+
+    # # If the content is negative, return 1, else 0
+    # return undef unless;
+    # 1;
+    
+    # # Close the Photo (optional
+    # close ($photo) or die "Can't close file [$filename]: $!";
+# }
+
+### Main
+
 my $google = WWW::Google::Contacts->new(
-    username => "altmann.mark",
-    password => "XXX",
+    username => , # USER.ID
+    password => , # PASSWORD. Mind the 2-factor-authentication
     protocol => "https",
 );
 
-### Test Stuff you could do!
+# Create a new contact list for contacts with images
+my $contacts = $google->contacts;
 
-# Create a new contact
-my $contact = $google->new_contact;
-$contact->full_name("Emmett Brown");
-$contact->name_prefix("Dr");
-$contact->email('doctor@timetravel.org');
-$contact->hobby("Time travel");
-$contact->jot([ "Went back in time", "Went forward in time", "Became blacksmith" ]),
-$contact->create;  # save it to the server
-
-# Now search for the given name, and read the jots
-my @contacts = $google->contacts->search({ given_name => "Emmett" });
-foreach my $c ( @contacts ) {
-    print "Got the following jots about the good doctor\n";
-    foreach my $jot ( @{ $c->jot } ) {
-        print "Jot: " . $jot->value . "\n";
+    while ( my $cont = $contacts->next ) {
+      if ( $cont->photo->exists ) {
+          print "You got a friend called " . $cont->full_name . " with photo!\n";
+          # Save the picture to disk!
+          print $FindBin::Bin . "/images/" . $cont->full_name . ".jpg";
+          $cont->photo->to_file( $FindBin::Bin . "/images/" . $cont->full_name . ".jpg" );
+          # TODO: Insert photo checker here
+          
+          # $cont->photo->delete;
+          # $cont->update;
+        }
+      
     }
-    print "And now he goes back to the future\n";
-    $c->delete;
-}
-
-# Print the names of all groups
-my $groups = $google->groups;
-while ( my $group = $groups->next ) {
-    print "Title = " . $group->title . "\n";
-}
-
-# Add the contact to existing group 'Movie stars' and to a new group 'Back to the future'
-my $new_group = $google->new_group({ title => "Back to the future" });
-$new_group->create;  # create on server
-
-my @groups = $google->groups->search({ title => "Movie stars" });
-my $movie_stars_group = shift @groups;
-
-$contact->add_group_membership( $new_group );
-$contact->add_group_membership( $movie_stars_group );
-$contact->update;
